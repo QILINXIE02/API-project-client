@@ -1,19 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { fetchTracksByMood } from '../utils/api';
+import React from 'react';
 
-const MusicTrackList = ({ mood, city }) => {
-  const [tracks, setTracks] = useState([]);
-
-  useEffect(() => {
-    if (mood && city) {
-      fetchTracksByMood(mood, city).then(setTracks);
-    }
-  }, [mood, city]);
-
-  if (!mood || !city) return null;
-
-  return (
-    <div>
+const MusicTrackList = ({ tracks, mood }) => (
+  tracks.length > 0 ? (
+    <div className="music">
       <h3>Music for {mood}</h3>
       <ul>
         {tracks.map((track) => (
@@ -27,7 +16,7 @@ const MusicTrackList = ({ mood, city }) => {
         ))}
       </ul>
     </div>
-  );
-};
+  ) : null
+);
 
 export default MusicTrackList;
