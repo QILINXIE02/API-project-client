@@ -5,8 +5,8 @@ const MusicTrackList = ({ tracks, mood }) => (
     <div className="music">
       <h3>Music for {mood}</h3>
       <ul>
-        {tracks.map((track) => (
-          <li key={track.id}>
+        {tracks.map((track, index) => (
+          <li key={track.id || index}>
             <strong>{track.name}</strong> by {track.artist_name}
             <br />
             <audio controls>
