@@ -1,22 +1,35 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
-const MusicTrackList = ({ tracks, mood }) => (
-  tracks.length > 0 ? (
+const MusicTrackList = ({ tracks, mood }) => {
+  const [favorites, setFavorites] = useState(() => {
+    return JSON.parse(localStorage.getItem('favorites')) || [];
+  });
+
+  const toggleFavorite = (track) => {
+    const exists = favorites.find(t => t.url === track.url);
+    const updated = exists
+      ? favorites.filter(t => t.url !== track.url)
+      : [...favorites, track];
+    setFavorites(updated);
+    localStorage.setItem('favorites', JSON.stringify(updated));
+  };
+
+  return (
     <div className="music">
-      <h3>Music for {mood}</h3>
+      <h2>Tracks for your mood: {mood}</h2>
       <ul>
         {tracks.map((track, index) => (
-          <li key={track.id || index}>
-            <strong>{track.name}</strong> by {track.artist_name}
-            <br />
-            <audio controls>
-              <source src={track.audio} type="audio/mpeg" />
-            </audio>
+          <li key={index}>
+            <p>{track.name} - {track.artist_name}</p>
+            <audio controls src={track.audio} />
+            <button onClick={() => toggleFavorite(track)}>
+              {favorites.some(t => t.url === track.url) ? '💖' : '🤍'}
+            </button>
           </li>
         ))}
       </ul>
     </div>
-  ) : null
-);
+  );
+};
 
 export default MusicTrackList;
