@@ -22,9 +22,10 @@ const MusicTrackList = ({ tracks, mood }) => {
           <li key={index}>
             <p>{track.name} - {track.artist_name}</p>
             <audio controls src={track.audio} />
-            <button onClick={() => toggleFavorite(track)}>
-              {favorites.some(t => t.url === track.url) ? '💖' : '🤍'}
-            </button>
+<button onClick={() => toggleFavorite(track)}>
+  {favorites.some(fav => fav.id === track.id) ? '💖' : '🤍'}
+</button>
+
           </li>
         ))}
       </ul>
