@@ -1,34 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
-const MusicTrackList = ({ tracks, mood }) => {
-  const [favorites, setFavorites] = useState(() => {
-    return JSON.parse(localStorage.getItem('favorites')) || [];
-  });
+const MusicTrackList = ({ tracks, mood, favorites, toggleFavorite, onPlayTrack }) => {
+  const [visibleCount, setVisibleCount] = useState(5);
 
-  const toggleFavorite = (track) => {
-    const exists = favorites.find(t => t.url === track.url);
-    const updated = exists
-      ? favorites.filter(t => t.url !== track.url)
-      : [...favorites, track];
-    setFavorites(updated);
-    localStorage.setItem('favorites', JSON.stringify(updated));
-  };
+  const showMore = () => setVisibleCount((prev) => prev + 5);
 
   return (
     <div className="music">
       <h2>Tracks for your mood: {mood}</h2>
       <ul>
-        {tracks.map((track, index) => (
-          <li key={index}>
-            <p>{track.name} - {track.artist_name}</p>
-            <audio controls src={track.audio} />
-<button onClick={() => toggleFavorite(track)}>
-  {favorites.some(fav => fav.id === track.id) ? '💖' : '🤍'}
-</button>
-
+        {tracks.slice(0, visibleCount).map((track, index) => (
+          <li key={track.id || index}>
+            <p>{track.name || 'Unknown Title'} - {track.artist_name || 'Unknown Artist'}</p>
+            {track.audio && (
+              <audio controls src={track.audio} onPlay={() => onPlayTrack(track)} />
+            )}
+            <button onClick={() => toggleFavorite(track)}>
+              {favorites.some(fav => fav.id === track.id) ? '💖' : '🤍'}
+            </button>
           </li>
         ))}
       </ul>
+      {visibleCount < tracks.length && (
+        <button onClick={showMore}>Show More</button>
+      )}
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { withAuth0 } from '@auth0/auth0-react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
 import AuthButtons from './Auth/AuthButtons';
 import Login from './Auth/Login';
@@ -10,6 +11,7 @@ import MoodSelector from './components/MoodSelector';
 import CityInput from './components/CityInput';
 import WeatherDisplay from './components/WeatherDisplay';
 import MusicTrackList from './components/MusicTrackList';
+import FavoritesPage from './components/FavoritesPage';
 
 import { fetchWeather, fetchTracksByMood } from './utils/api';
 import './index.css';
@@ -21,6 +23,7 @@ const App = (props) => {
   const [city, setCity] = useState('');
   const [weather, setWeather] = useState(null);
   const [tracks, setTracks] = useState([]);
+  const [displayedTracks, setDisplayedTracks] = useState([]);
   const [favorites, setFavorites] = useState(() => {
     const saved = localStorage.getItem('favorites');
     return saved ? JSON.parse(saved) : [];
@@ -35,7 +38,6 @@ const App = (props) => {
   const analyserRef = useRef(null);
   const animationRef = useRef(null);
 
-  // Location detection
   useEffect(() => {
     if (!city && 'geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -56,12 +58,10 @@ const App = (props) => {
     }
   }, [city, LOCATIONIQ_API_KEY]);
 
-  // Fetch weather on city change
   useEffect(() => {
     if (city) fetchWeather(city).then(setWeather);
   }, [city]);
 
-  // Set mood based on weather if not set manually
   useEffect(() => {
     if (weather && !mood) {
       const desc = weather.weather.description.toLowerCase();
@@ -77,26 +77,27 @@ const App = (props) => {
     }
   }, [weather, mood]);
 
-  // Fetch tracks when mood or city changes
   useEffect(() => {
     if (mood && city) {
       fetchTracksByMood(mood, city)
-        .then(setTracks)
+        .then((res) => {
+          setTracks(res);
+          setDisplayedTracks(res.slice(0, 5));
+        })
         .catch((err) => {
           console.error('Error fetching tracks:', err);
           setTracks([]);
         });
     } else {
       setTracks([]);
+      setDisplayedTracks([]);
     }
   }, [mood, city]);
 
-  // Save favorites to localStorage
   useEffect(() => {
     localStorage.setItem('favorites', JSON.stringify(favorites));
   }, [favorites]);
 
-  // Audio visualizer setup
   useEffect(() => {
     const audio = audioRef.current;
     const canvas = canvasRef.current;
@@ -130,7 +131,6 @@ const App = (props) => {
     }
 
     analyser.fftSize = 256;
-
     audioContextRef.current = audioContext;
     analyserRef.current = analyser;
 
@@ -189,6 +189,11 @@ const App = (props) => {
     }
   };
 
+  const showMoreTracks = () => {
+    const next = displayedTracks.length + 5;
+    setDisplayedTracks(tracks.slice(0, next));
+  };
+
   const generateShareUrl = () => {
     const base = window.location.origin + window.location.pathname;
     const params = new URLSearchParams();
@@ -206,66 +211,81 @@ const App = (props) => {
   }, []);
 
   return (
-    <div className="app-container">
-      {/* Auth UI */}
-      {/* <div>
-        <AuthButtons />
-      </div> */}
-      <div>
+    <Router>
+      <div className="app-container">
         <Login />
+        {/* <Logout /> */}
+
+        {auth0.isAuthenticated ? (
+          <>
+<div className="header">
+  <div className="nav-links">
+    <Link to="/">Home</Link>
+    <Link to="/favorites">Favorites</Link>
+  </div>
+  <Logout className="logout-button" />
+</div>
+
+
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <>
+                    <Profile />
+                    <h1 className="title">TravelTunes</h1>
+
+                    <MoodSelector mood={mood} setMood={setMood} />
+                    <CityInput city={city} setCity={setCity} />
+                    <WeatherDisplay weather={weather} />
+
+                    <button onClick={() => navigator.clipboard.writeText(generateShareUrl())}>
+                      Share Playlist Link
+                    </button>
+
+                    <canvas
+                      ref={canvasRef}
+                      width="600"
+                      height="100"
+                      style={{
+                        margin: '20px auto',
+                        display: currentTrack ? 'block' : 'none',
+                        borderRadius: '8px',
+                        backgroundColor: '#0ed2f7',
+                      }}
+                    />
+
+                    <MusicTrackList
+                      tracks={displayedTracks}
+                      mood={mood}
+                      onPlayTrack={setCurrentTrack}
+                      favorites={favorites}
+                      toggleFavorite={toggleFavorite}
+                      showMore={showMoreTracks}
+                    />
+
+                    {currentTrack && (
+                      <audio
+                        ref={audioRef}
+                        src={currentTrack.preview_url}
+                        controls
+                        autoPlay
+                        onEnded={() => setCurrentTrack(null)}
+                        style={{ width: '100%', marginTop: '1rem', borderRadius: '8px' }}
+                        crossOrigin="anonymous"
+                      />
+                    )}
+                  </>
+                }
+              />
+              <Route path="/favorites" element={<FavoritesPage favorites={favorites} />} />
+            </Routes>
+          </>
+        ) : (
+          <p>Please login to use the app.</p>
+        )}
       </div>
-      <div>
-        <Logout />
-      </div>
-
-      {/* Show main app only if authenticated */}
-      {auth0.isAuthenticated ? (
-        <>
-          <Profile />
-
-          <h1 className="title">TravelTunes</h1>
-
-          <MoodSelector mood={mood} setMood={setMood} />
-          <CityInput city={city} setCity={setCity} />
-          <WeatherDisplay weather={weather} />
-
-          <div>
-            <button onClick={() => navigator.clipboard.writeText(generateShareUrl())}>
-              Share Playlist Link
-            </button>
-          </div>
-
-          <canvas
-            ref={canvasRef}
-            width="600"
-            height="100"
-            style={{ margin: '20px auto', display: currentTrack ? 'block' : 'none', borderRadius: '8px', backgroundColor: '#0ed2f7' }}
-          />
-
-          <MusicTrackList
-            tracks={tracks}
-            mood={mood}
-            onPlayTrack={setCurrentTrack}
-            favorites={favorites}
-            toggleFavorite={toggleFavorite}
-          />
-
-          {currentTrack && (
-            <audio
-              ref={audioRef}
-              src={currentTrack.preview_url}
-              controls
-              autoPlay
-              onEnded={() => setCurrentTrack(null)}
-              style={{ width: '100%', marginTop: '1rem', borderRadius: '8px' }}
-              crossOrigin="anonymous"
-            />
-          )}
-        </>
-      ) : (
-        <p>Please login to use the app.</p>
-      )}
-    </div>
+    </Router>
   );
 };
 
