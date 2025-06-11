@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import '../style.css';
+
 
 const FavoritesPage = ({ favorites = [], toggleFavorite, suggestedTracks = [], onAddToFavorites }) => {
   const [sortBy, setSortBy] = useState('name');

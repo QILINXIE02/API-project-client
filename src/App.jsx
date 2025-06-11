@@ -1,17 +1,22 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { withAuth0 } from '@auth0/auth0-react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import AuthButtons from './Auth/AuthButtons';
 import Login from './Auth/Login';
-import Logout from './Auth/Logout';
+import LogoutButton from './Auth/Logout';
 import Profile from './Profile';
+import Contact from './components/Contact';
+import FeaturedSong from './components/FeaturedSong';
 
 import MoodSelector from './components/MoodSelector';
 import CityInput from './components/CityInput';
 import WeatherDisplay from './components/WeatherDisplay';
 import MusicTrackList from './components/MusicTrackList';
 import FavoritesPage from './components/FavoritesPage';
+
+import Header from './Header';
+import Footer from './Footer';
 
 import { fetchWeather, fetchTracksByMood } from './utils/api';
 import './index.css';
@@ -212,21 +217,12 @@ const App = (props) => {
 
   return (
     <Router>
+      <Header />
       <div className="app-container">
         <Login />
-        {/* <Logout /> */}
-
+                        <LogoutButton />
         {auth0.isAuthenticated ? (
           <>
-<div className="header">
-  <div className="nav-links">
-    <Link to="/">Home</Link>
-    <Link to="/favorites">Favorites</Link>
-  </div>
-  <Logout className="logout-button" />
-</div>
-
-
             <Routes>
               <Route
                 path="/"
@@ -234,10 +230,11 @@ const App = (props) => {
                   <>
                     <Profile />
                     <h1 className="title">TravelTunes</h1>
-
                     <MoodSelector mood={mood} setMood={setMood} />
                     <CityInput city={city} setCity={setCity} />
                     <WeatherDisplay weather={weather} />
+
+                    <FeaturedSong tracks={tracks} />
 
                     <button onClick={() => navigator.clipboard.writeText(generateShareUrl())}>
                       Share Playlist Link
@@ -279,12 +276,15 @@ const App = (props) => {
                 }
               />
               <Route path="/favorites" element={<FavoritesPage favorites={favorites} />} />
+              <Route path="/contact" element={<Contact />} />
             </Routes>
           </>
         ) : (
           <p>Please login to use the app.</p>
         )}
+
       </div>
+      <Footer />
     </Router>
   );
 };

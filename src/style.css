@@ -1,0 +1,65 @@
+* {
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+.navbar {
+    background-color: rgb(44, 137, 136);
+
+}
+
+.navbar-brand {
+    margin-left: 5px;
+    padding: 10px;
+    background-color: rgb(149, 236, 231);
+}
+
+.navbar h1{
+    color: white;
+}
+
+body h2 {
+    color: blue;
+    padding: 10px;
+}
+
+/* p {
+    color: white;
+} */
+
+.nav-item {
+    color: white;
+    text-decoration: none;
+}
+
+.nav-item:hover {
+    color: yellow;
+    transform: scale(1.2); /* increases size by 10% */
+}
+
+.nav-item .nav-link {
+    margin-right: 100px; /* space to the right of each item */
+    margin-left: 50px;
+  }
+  
+  .nav-item:last-child {
+    margin-right: 0; /* remove the margin from the last item */
+  }
+
+  .carousel-text {
+    color: black;
+  }
+
+
+
+
+.header {
+  justify-content: center;
+  text-align: center;
+}
+
+.footer {
+  text-align: center;
+  padding: 1rem 0;
+  background-color: rgb(44, 137, 136);
+  color: white;
+}
